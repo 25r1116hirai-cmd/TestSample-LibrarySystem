@@ -64,12 +64,38 @@ from datetime import datetime, timedelta
             (2, i, now.strftime('%Y-%m-%d %H:%M:%S'), (now + timedelta(days=14)).strftime('%Y-%m-%d'))
         )
 
-    # user02: 3年以上前の古い履歴（削除バッチのテスト用）
-    three_years_ago = now - timedelta(days=365 * 3 + 10)
+    # テスト用基準日（仕様書の2023年2月16日基準に合わせるための設定）
+    # 実際の日付を使う場合は datetime.now() を基準に計算します
+    
+    # 3年以上前の日付（削除境界値テスト用）
+    three_years_ago = now - timedelta(days=365 * 3 + 1) 
+    
+    # 期限切れの日付（延滞テスト用）
+    expired_date = now - timedelta(days=20)
+    deadline_past = now - timedelta(days=6)
+
+    # 1. 【テストNO.3用】3年以上前の「返却済み」データ（削除されるべきデータ）
     db.execute(
         'INSERT INTO loan (user_id, book_id, loan_date, return_deadline, return_date) VALUES (?, ?, ?, ?, ?)',
-        (3, 1, three_years_ago.strftime('%Y-%m-%d %H:%M:%S'), '2022-01-01', '2022-01-10')
+        (2, 1, three_years_ago.strftime('%Y-%m-%d %H:%M:%S'), 
+         three_years_ago.strftime('%Y-%m-%d'), 
+         three_years_ago.strftime('%Y-%m-%d %H:%M:%S'))
     )
-    
+
+    # 2. 【テストNO.4用】3年以上前の「未返却」データ（削除されてはいけないデータ）
+    db.execute(
+        'INSERT INTO loan (user_id, book_id, loan_date, return_deadline) VALUES (?, ?, ?, ?)',
+        (3, 2, three_years_ago.strftime('%Y-%m-%d %H:%M:%S'), 
+         three_years_ago.strftime('%Y-%m-%d'))
+    )
+
+    # 3. 【テストNO.5用】返却期限切れの本が1冊ある状態（新規貸出拒否のテスト用）
+    # user02 (ID:3) が延滞しているケース
+    db.execute(
+        'INSERT INTO loan (user_id, book_id, loan_date, return_deadline) VALUES (?, ?, ?, ?)',
+        (3, 3, expired_date.strftime('%Y-%m-%d %H:%M:%S'), 
+         deadline_past.strftime('%Y-%m-%d'))
+    )
+
     db.commit()
     print("初期データの投入が完了しました。")

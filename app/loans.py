@@ -47,7 +47,7 @@ def borrow(book_id):
     ).fetchone()[0]
 
     if active_loans_count > 10:
-        flash("5冊以上同時に借りることはできません。")
+        flash("10冊以上同時に借りることはできません。")
         return redirect(url_for('books.index'))
 
     # 3. Process Borrowing
