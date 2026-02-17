@@ -53,5 +53,23 @@ with app.app_context():
     db.execute('DELETE FROM loan')
     db.execute('DELETE FROM sqlite_sequence WHERE name="loan"')
 
+from datetime import datetime, timedelta
+    now = datetime.now()
+
+    # テスト用データ案
+    # user01: 現在9冊貸出中（あと1冊借りられるかテスト用）
+    for i in range(1, 10):
+        db.execute(
+            'INSERT INTO loan (user_id, book_id, loan_date, return_deadline) VALUES (?, ?, ?, ?)',
+            (2, i, now.strftime('%Y-%m-%d %H:%M:%S'), (now + timedelta(days=14)).strftime('%Y-%m-%d'))
+        )
+
+    # user02: 3年以上前の古い履歴（削除バッチのテスト用）
+    three_years_ago = now - timedelta(days=365 * 3 + 10)
+    db.execute(
+        'INSERT INTO loan (user_id, book_id, loan_date, return_deadline, return_date) VALUES (?, ?, ?, ?, ?)',
+        (3, 1, three_years_ago.strftime('%Y-%m-%d %H:%M:%S'), '2022-01-01', '2022-01-10')
+    )
+    
     db.commit()
     print("初期データの投入が完了しました。")

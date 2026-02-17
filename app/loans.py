@@ -46,7 +46,7 @@ def borrow(book_id):
         (g.user['id'],)
     ).fetchone()[0]
 
-    if active_loans_count > 5:
+    if active_loans_count > 10:
         flash("5冊以上同時に借りることはできません。")
         return redirect(url_for('books.index'))
 
@@ -110,3 +110,4 @@ def return_book(loan_id):
     
     flash("返却しました。")
     return redirect(url_for('loans.index'))
+
